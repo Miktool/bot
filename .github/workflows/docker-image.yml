@@ -51,6 +51,6 @@ jobs:
     - name: Deploy to Production
       env:
         TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-        GIN_MODE: ${{ variables.GIN_MODE }}
+        GIN_MODE: ${{ env.GIN_MODE }}
       run: |
         docker-compose up -d --build

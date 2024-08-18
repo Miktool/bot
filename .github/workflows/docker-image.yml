@@ -35,7 +35,7 @@ jobs:
       env:
         TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
       run: |
-        docker-compose up -d --build
+        docker compose up -d --build
 
 #    - name: Run tests
 #      run: docker-compose exec app go test ./...

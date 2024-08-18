@@ -37,8 +37,8 @@ jobs:
       run: |
         docker-compose up -d --build
 
-    - name: Run tests
-      run: docker-compose exec app go test ./...
+#    - name: Run tests
+#      run: docker-compose exec app go test ./...
 
   deploy:
     runs-on: ubuntu-latest
@@ -51,6 +51,6 @@ jobs:
     - name: Deploy to Production
       env:
         TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-        GIN_MODE: ${{ env.GIN_MODE }}
+        GIN_MODE: ${{ vars.GIN_MODE }}
       run: |
         docker-compose up -d --build

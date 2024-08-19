@@ -41,7 +41,7 @@ jobs:
       #       name: mongod.conf
       #       path: mongod.conf
       - name: Save Docker image to tar
-        run: docker save -o /home/runner/image.tar bot-app-1
+        run: docker save -o /home/runner/image.tar bot-app
       - name: list files
         run: ls -sh /home/runner/
       # - name: upload artifact

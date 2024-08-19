@@ -1,56 +1,161 @@
-name: CI/CD Pipeline
+name: Build and Deploy
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+   push:
+       branches:
+           - main
+#  workflow_dispatch:
 
 jobs:
-  build:
+  buildEndDeploy:
     runs-on: ubuntu-latest
+    env:
+      #from env vars
+#      BACKEND_PORT: ${{ vars.BACKEND_PORT }}
+#      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+#      DATABASE_URL: ${{ vars.DATABASE_URL }}
+#      URL_APP: ${{ vars.URL_APP }}
+#      JWT_TOKEN: ${{ vars.JWT_TOKEN }}
+      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+      GIN_MODE: ${{ vars.GIN_MODE }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: 1.22.6
+      - name: Build Docker image
+        run: docker compose build
+      - name: copy docker-compose.yml to /home/runner/
+        run: cp docker-compose.yml /home/runner/
+#      - name: copy mongod.conf to /home/runner/
+#        run: cp mongod.conf /home/runner/
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      # - name: save docker-compose.yml to artifact
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #       name: docker-compose.yml
+      #       path: docker-compose.yml
+      # - name: save mongod.conf to artifact
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #       name: mongod.conf
+      #       path: mongod.conf
+      - name: Save Docker image to tar
+        run: docker save -o /home/runner/image.tar miktool-bot
+      - name: list files
+        run: ls -sh /home/runner/
+      # - name: upload artifact
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #       name: image.tar
+      #       path: /home/runner/image.tar
+      - name: run deploy
+        run: echo "deploying"
+      - name: list files
+        run: ls -sh /home/runner/
+      - name: create dirs
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            mkdir -p /home/gitdeployer/tg
 
-    - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: add known hosts
+        uses: kielabokkie/ssh-key-and-known-hosts-action@v1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-host: ${{ secrets.SSH_HOST }}
+          ssh-port: ${{ secrets.SSH_PORT }}
+      - name: transfer image
+        run: |
+          scp -P ${{ secrets.SSH_PORT }} /home/runner/image.tar ${{ secrets.USERNAME }}@${{ secrets.SSH_HOST }}:/home/gitdeployer/tg
+          scp -P ${{ secrets.SSH_PORT }} /home/runner/docker-compose.yml ${{ secrets.USERNAME }}@${{ secrets.SSH_HOST }}:/home/gitdeployer/tg
+          scp -P ${{ secrets.SSH_PORT }} /home/runner/mongod.conf ${{ secrets.USERNAME }}@${{ secrets.SSH_HOST }}:/home/gitdeployer/tg
 
-    - name: Build and push Docker image
-      env:
-        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-      run: |
-        docker compose up -d --build
+      - name: deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+#            export DATABASE_URL=${{ vars.DATABASE_URL }}
+#            export BACKEND_PORT=${{ vars.BACKEND_PORT }}
+#            export BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+#            export URL_APP=${{ vars.URL_APP }}
+#            export JWT_TOKEN=${{ vars.JWT_TOKEN }}
+#            export DROP=${{ secrets.DROP }}
+#            export REDIS_URL=${{ vars.REDIS_URL }}
+#            export ADMIN_ID=${{ secrets.ADMIN_ID }}
+#            export CHANNEL_NAME=${{ vars.CHANNEL_NAME }}
+#            export TWITTER=${{ vars.TWITTER }}
+#            export BOT_NAME=${{ vars.BOT_NAME }}
+#            export WEB3_URL=${{ vars.WEB3_URL }}
+            export TG_BOT_TOKEN= ${{ secrets.TG_BOT_TOKEN }}
+            export GIN_MODE= ${{ vars.GIN_MODE }}
+            cd /home/gitdeployer/tg
+            docker load -i image.tar
+            docker compose up -d
+            rm image.tar
 
-#    - name: Run tests
-#      run: docker-compose exec app go test ./...
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Deploy to Production
-      env:
-        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-        GIN_MODE: ${{ vars.GIN_MODE }}
-      run: |
-        docker-compose up -d --build
+#name: CI/CD Pipeline
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#  pull_request:
+#    branches:
+#      - main
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - name: Checkout code
+#      uses: actions/checkout@v3
+#
+#    - name: Set up Go
+#      uses: actions/setup-go@v4
+#      with:
+#        go-version: 1.22.6
+#
+#    - name: Set up Docker Buildx
+#      uses: docker/setup-buildx-action@v2
+#
+#    - name: Log in to GitHub Container Registry
+#      uses: docker/login-action@v3
+#      with:
+#        registry: ghcr.io
+#        username: ${{ github.repository_owner }}
+#        password: ${{ secrets.GITHUB_TOKEN }}
+#
+#    - name: Build and push Docker image
+#      env:
+#        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+#      run: |
+#        docker compose up -d --build
+#
+##    - name: Run tests
+##      run: docker-compose exec app go test ./...
+#
+#  deploy:
+#    runs-on: ubuntu-latest
+#    needs: build
+#
+#    steps:
+#    - name: Checkout code
+#      uses: actions/checkout@v3
+#
+#    - name: Deploy to Production
+#      env:
+#        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+#        GIN_MODE: ${{ vars.GIN_MODE }}
+#      run: |
+#        docker-compose up -d --build

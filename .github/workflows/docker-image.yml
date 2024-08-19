@@ -83,20 +83,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-#            export DATABASE_URL=${{ vars.DATABASE_URL }}
-#            export BACKEND_PORT=${{ vars.BACKEND_PORT }}
-#            export BOT_TOKEN=${{ secrets.BOT_TOKEN }}
-#            export URL_APP=${{ vars.URL_APP }}
-#            export JWT_TOKEN=${{ vars.JWT_TOKEN }}
-#            export DROP=${{ secrets.DROP }}
-#            export REDIS_URL=${{ vars.REDIS_URL }}
-#            export ADMIN_ID=${{ secrets.ADMIN_ID }}
-#            export CHANNEL_NAME=${{ vars.CHANNEL_NAME }}
-#            export TWITTER=${{ vars.TWITTER }}
-#            export BOT_NAME=${{ vars.BOT_NAME }}
-#            export WEB3_URL=${{ vars.WEB3_URL }}
-            export TG_BOT_TOKEN= ${{ secrets.TG_BOT_TOKEN }}
-            export GIN_MODE= ${{ vars.GIN_MODE }}
+            export TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}
+            export GIN_MODE=${{ vars.GIN_MODE }}
             cd /home/gitdeployer/tg
             docker load -i image.tar
             docker compose up -d

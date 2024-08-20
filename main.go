@@ -70,7 +70,9 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
+	log.Printf("Listening for updates %v", updates)
 	for update := range updates {
+		log.Printf("Received update: %v", update)
 		if update.Message != nil { // If we got a message
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 

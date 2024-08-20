@@ -97,12 +97,15 @@ func receiveUpdates(ctx context.Context, updates tgbotapi.UpdatesChannel) {
 	// `for {` means the loop is infinite until we manually stop it
 	log.Printf("Listening for updates %v", updates)
 	for {
+		log.Println("loop")
 		select {
 		// stop looping if ctx is cancelled
 		case <-ctx.Done():
+			log.Println("Stopping updates")
 			return
 		// receive update from channel and then handle it
 		case update := <-updates:
+			log.Println("Received update")
 			handleUpdate(update)
 		}
 	}

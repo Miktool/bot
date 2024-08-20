@@ -64,6 +64,7 @@ func main() {
 		// Abort if something is wrong
 		log.Panic(err)
 	}
+	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	// Set this to true to log all interactions with telegram servers
 	bot.Debug = false

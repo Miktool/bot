@@ -54,6 +54,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	router := gin.Default()
 

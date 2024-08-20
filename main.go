@@ -50,22 +50,19 @@ func init() {
 }
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI("TG_BOT_TOKEN")
-	if err != nil {
-		log.Panic(err)
-	}
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	router := gin.Default()
-
 	enverr := godotenv.Load()
 	if enverr != nil {
 		log.Fatal("Error loading .env file")
 	}
+	bot, err := tgbotapi.NewBotAPI("TG_BOT_TOKEN")
+	if err != nil {
+		log.Panic(err)
+	}
+	router := gin.Default()
+
 	bot.Debug = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -51,47 +50,83 @@ func init() {
 }
 
 func main() {
-	var err error
+	bot, err := tgbotapi.NewBotAPI("MyAwesomeBotToken")
+	if err != nil {
+		log.Panic(err)
+	}
+
 	router := gin.Default()
 
 	enverr := godotenv.Load()
 	if enverr != nil {
 		log.Fatal("Error loading .env file")
 	}
+	bot.Debug = true
 
-	bot, err = tgbotapi.NewBotAPI(os.Getenv("TG_BOT_TOKEN"))
-	if err != nil {
-		// Abort if something is wrong
-		log.Panic(err)
-	}
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	// Set this to true to log all interactions with telegram servers
-	bot.Debug = false
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	// Create a new cancellable background context. Calling `cancel()` leads to the cancellation of the context
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-
-	// `updates` is a golang channel which receives telegram updates
 	updates := bot.GetUpdatesChan(u)
 
-	// Pass cancellable context to goroutine
-	go receiveUpdates(ctx, updates)
+	for update := range updates {
+		if update.Message != nil { // If we got a message
+			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-	// Tell the user the bot is online
-	log.Println("Start listening for updates. Press enter to stop")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+			msg.ReplyToMessageID = update.Message.MessageID
 
-	// Wait for a newline symbol, then cancel handling updates
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
-	cancel()
+			bot.Send(msg)
+		}
+	}
 
 	router.GET("/status", getServerStatus)
 	router.Run(":8080")
 }
+
+//func main() {
+//	var err error
+//	router := gin.Default()
+//
+//	enverr := godotenv.Load()
+//	if enverr != nil {
+//		log.Fatal("Error loading .env file")
+//	}
+//
+//	bot, err = tgbotapi.NewBotAPI(os.Getenv("TG_BOT_TOKEN"))
+//	if err != nil {
+//		// Abort if something is wrong
+//		log.Panic(err)
+//	}
+//	log.Printf("Authorized on account %s", bot.Self.UserName)
+//
+//	// Set this to true to log all interactions with telegram servers
+//	bot.Debug = false
+//
+//	u := tgbotapi.NewUpdate(0)
+//	u.Timeout = 60
+//
+//	// Create a new cancellable background context. Calling `cancel()` leads to the cancellation of the context
+//	ctx := context.Background()
+//	ctx, cancel := context.WithCancel(ctx)
+//
+//	// `updates` is a golang channel which receives telegram updates
+//	updates := bot.GetUpdatesChan(u)
+//
+//	// Pass cancellable context to goroutine
+//	go receiveUpdates(ctx, updates)
+//
+//	// Tell the user the bot is online
+//	log.Println("Start listening for updates. Press enter to stop")
+//
+//	// Wait for a newline symbol, then cancel handling updates
+//	bufio.NewReader(os.Stdin).ReadBytes('\n')
+//	cancel()
+//
+//	router.GET("/status", getServerStatus)
+//	router.Run(":8080")
+//}
 
 func receiveUpdates(ctx context.Context, updates tgbotapi.UpdatesChannel) {
 	// `for {` means the loop is infinite until we manually stop it

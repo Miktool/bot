@@ -50,7 +50,7 @@ func init() {
 }
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI("MyAwesomeBotToken")
+	bot, err := tgbotapi.NewBotAPI("TG_BOT_TOKEN")
 	if err != nil {
 		log.Panic(err)
 	}

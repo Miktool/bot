@@ -95,6 +95,7 @@ func main() {
 
 func receiveUpdates(ctx context.Context, updates tgbotapi.UpdatesChannel) {
 	// `for {` means the loop is infinite until we manually stop it
+	log.Printf("Listening for updates %v", updates)
 	for {
 		select {
 		// stop looping if ctx is cancelled
@@ -108,6 +109,7 @@ func receiveUpdates(ctx context.Context, updates tgbotapi.UpdatesChannel) {
 }
 
 func handleUpdate(update tgbotapi.Update) {
+	log.Printf("Received update: %v", update)
 	switch {
 	// Handle messages
 	case update.Message != nil:
@@ -124,7 +126,7 @@ func handleUpdate(update tgbotapi.Update) {
 func handleMessage(message *tgbotapi.Message) {
 	user := message.From
 	text := message.Text
-
+	log.Printf("Received message from %s: %s", user.FirstName, text)
 	if user == nil {
 		return
 	}

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -52,6 +53,12 @@ func init() {
 func main() {
 	var err error
 	router := gin.Default()
+
+	enverr := godotenv.Load()
+	if enverr != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	bot, err = tgbotapi.NewBotAPI(os.Getenv("TG_BOT_TOKEN"))
 	if err != nil {
 		// Abort if something is wrong

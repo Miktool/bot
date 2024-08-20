@@ -54,7 +54,7 @@ func main() {
 	if enverr != nil {
 		log.Fatal("Error loading .env file")
 	}
-	bot, err := tgbotapi.NewBotAPI("TG_BOT_TOKEN")
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TG_BOT_TOKEN"))
 	if err != nil {
 		log.Panic(err)
 	}

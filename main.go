@@ -89,7 +89,6 @@ func main() {
 	cancel()
 
 	router.GET("/status", getServerStatus)
-	router.GET("/", getHomeScreen)
 	router.Run(":8080")
 }
 
@@ -211,10 +210,4 @@ var status Status = Status{Status: "ok"}
 
 func getServerStatus(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, status)
-}
-
-var homeScreen string = "Welcome to the bot server"
-
-func getHomeScreen(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, homeScreen)
 }

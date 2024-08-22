@@ -29,7 +29,7 @@ var (
 	// Keyboard layout for the first menu. One button, one row
 	firstMenuMarkup = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL("Launch Miktool app", "https://mikteor.xyz"),
+			tgbotapi.NewInlineKeyboardButtonURL("Launch Miktool app", "https://t.me/Miktool_bot/Miktool"),
 		),
 	)
 )

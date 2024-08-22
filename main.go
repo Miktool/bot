@@ -29,17 +29,7 @@ var (
 	// Keyboard layout for the first menu. One button, one row
 	firstMenuMarkup = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(nextButton, nextButton),
-		),
-	)
-
-	// Keyboard layout for the second menu. Two buttons, one per row
-	secondMenuMarkup = tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData(backButton, backButton),
-		),
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonURL(tutorialButton, "https://core.telegram.org/bots/api"),
+			tgbotapi.NewInlineKeyboardButtonURL("Launch Miktool app", "https://mikteor.xyz"),
 		),
 	)
 )
@@ -73,9 +63,16 @@ func main() {
 		log.Printf("Received update: %v", update)
 		if update.Message != nil { // If we got a message
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			msg.ReplyToMessageID = update.Message.MessageID
+			switch update.Message.Text {
+			case "/start":
+				msg.Text = "Hello! You can open the Miktool app by clicking the button below."
+				msg.ReplyMarkup = firstMenuMarkup
+			default:
+				msg.ReplyToMessageID = update.Message.MessageID
+				msg.Text = update.Message.Text
+			}
 
 			bot.Send(msg)
 		}
@@ -220,7 +217,7 @@ func handleButton(query *tgbotapi.CallbackQuery) {
 
 	if query.Data == nextButton {
 		text = secondMenu
-		markup = secondMenuMarkup
+		markup = firstMenuMarkup
 	} else if query.Data == backButton {
 		text = firstMenu
 		markup = firstMenuMarkup
